@@ -42,7 +42,7 @@ def create_database():
     return Base.metadata.create_all(bind=engine)
 
 def get_db():
-    db = db_session()
+    db = SessionLocal()
     try:
         yield db
     finally:
