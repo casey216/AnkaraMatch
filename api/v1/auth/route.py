@@ -25,6 +25,7 @@ def login(
     logger.info(f"Login attempt by {form_data.username}")
     user: User = authenticate_user(form_data.username, form_data.password, db)
     if not user:
+        logger.warning(f"Login attempt by {form_data.username} failed. Invalid credentials.")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password."

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     """Class to hold application's config values."""
 
     # App configurations
+    ENV: str = config("ENV", default="development")
     API_PREFIX: str = config("API_PREFIX", default="/api/v1")
     JWT_SECRET: str = config("JWT_SECRET", default="jwtsecret")
     ALGORITHM: str = config("ALGORITHM", default="HS256")
