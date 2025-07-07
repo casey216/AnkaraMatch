@@ -8,7 +8,7 @@ from typing import Annotated
 from .model import User
 from .schema import UserRegistration
 from ..core.database import get_db
-from .utils import hash_password
+from .utils import hash_password, verify_password
 
 
 def create_user(user: UserRegistration, db: Annotated[Session, Depends(get_db)]):
@@ -30,15 +30,23 @@ def create_user(user: UserRegistration, db: Annotated[Session, Depends(get_db)])
             detail=f"User with email {user.email} already exists."
         )
 
-def get_user(db: Session, user_id: int):
+def authenticate_user(email: str, password: str, db: Session) -> User | None:
+    db_user = get_user_by_email(db, email)
+    if not db_user or not verify_password(password, db_user.hashed_password):
+        return None
+    return db_user
+
+def get_user_by_id(db: Session, user_id: int):
     """Returns a user described by user_id"""
-    user = db.query(User).filter(User.id == user_id).first()
-    return user
+    return db.query(User).filter(User.id == user_id).first()
+
+def get_user_by_email(db: Session, email: EmailStr):
+    """Gets a user by email"""
+    return db.query(User).filter(User.email == email).first()
 
 def get_all_users(db: Session):
     """Returns all users"""
-    users = db.query(User).all()
-    return users
+    return db.query(User).all()
 
 def update_user(db: Session, user_id: int, name: str, email: EmailStr, hased_password: str):
     """Updates user with new details"""
