@@ -8,6 +8,7 @@ from .schema import Token, UserRegistration, UserResponse
 from .service import create_user, authenticate_user
 from .utils import create_access_token
 from .model import User
+from ..core.logger import logger
 
 auth = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -21,6 +22,7 @@ def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)]
 ):
+    logger.info(f"Login attempt by {form_data.username}")
     user: User = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(
@@ -30,5 +32,6 @@ def login(
     data = {
         "email": user.email
     }
+    logger.info(f"User {form_data.username} logged in successfully.")
     return create_access_token(data)
 

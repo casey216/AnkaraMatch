@@ -9,10 +9,12 @@ from .model import User
 from .schema import UserRegistration
 from ..core.database import get_db
 from .utils import hash_password, verify_password
+from ..core.logger import logger
 
 
 def create_user(user: UserRegistration, db: Annotated[Session, Depends(get_db)]):
     """Creates new user"""
+    logger.info(f"Creating user: {user.email}")
     db_user = User(
         name=user.name,
         email=user.email,
@@ -22,9 +24,11 @@ def create_user(user: UserRegistration, db: Annotated[Session, Depends(get_db)])
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
+        logger.info(f"User: {user.email} created successfully.")
         return db_user
     except IntegrityError:
         db.rollback()
+        logger.warning(f"User with email {user.email} already exists.")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"User with email {user.email} already exists."
