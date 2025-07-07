@@ -1,13 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import jwt, JWTError
+from jose.exceptions import ExpiredSignatureError
 
 from ..core.settings import settings
-from .schema import UserLogin
-from .model import User
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -15,8 +12,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
-def verify_password(plain_password: str, hased_password: str) -> bool:
-    return pwd_context.verify(plain_password, hased_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
@@ -37,7 +34,9 @@ def decode_access_token(token: str) -> dict:
             settings.JWT_SECRET,
             algorithms=[settings.ALGORITHM]
         ), None
-    except JWTError as err:
-        return None, err
+    except ExpiredSignatureError:
+        return None, "Token expired."
+    except JWTError:
+        return None, "Invalid token."
 
 
