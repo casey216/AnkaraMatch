@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.v1.core.database import Base, engine
 from api.v1.auth.route import auth
 from api.v1.core.settings import settings
+from api.v1.core.middleware import LoggingMiddleware
 
 app = FastAPI()
 app.include_router(auth, prefix=settings.API_PREFIX)
@@ -16,6 +17,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LoggingMiddleware)
 
 @app.on_event("startup")
 def startup():
