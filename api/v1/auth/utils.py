@@ -23,7 +23,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return jwt.encode(to_encode,settings.JWT_SECRET,algorithm=settings.ALGORITHM)
 
 def create_refresh_token(data: dict):
-    create_access_token(data, expires_delta=timedelta(days=7))
+    return create_access_token(data, expires_delta=timedelta(days=7))
 
 def decode_access_token(token: str) -> dict:
     try:
@@ -36,5 +36,3 @@ def decode_access_token(token: str) -> dict:
         return None, "Token expired."
     except JWTError:
         return None, "Invalid token."
-
-
