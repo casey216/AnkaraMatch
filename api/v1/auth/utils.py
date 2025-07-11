@@ -22,10 +22,10 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     to_encode.update({"exp": expire, "iat": created_time})
     return jwt.encode(to_encode,settings.JWT_SECRET,algorithm=settings.ALGORITHM)
 
-def create_refresh_token(data: dict):
+def create_refresh_token(data: dict) -> str:
     return create_access_token(data, expires_delta=timedelta(days=7))
 
-def decode_access_token(token: str) -> dict:
+def decode_access_token(token: str) -> tuple[dict | None, str | None]:
     try:
         return jwt.decode(
             token,

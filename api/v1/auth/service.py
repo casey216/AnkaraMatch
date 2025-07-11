@@ -68,7 +68,15 @@ def authenticate_user(email: str, password: str, db: Session) -> User | None:
     return response
 
 def refresh_access_token(db: Session, refresh_token: str):
-    payload = decode_access_token(refresh_token)
+    """Refreshes an expired JWT Token"""
+    payload, error = decode_access_token(refresh_token)
+    if error:
+        logger.warning(f"Failed to refresh access token.\nError: {error}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={error}
+        )
+    
     user = get_user_by_email(db, payload.get("email"))
     if not user:
         raise HTTPException(
