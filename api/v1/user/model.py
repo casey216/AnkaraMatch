@@ -3,7 +3,7 @@ from api.v1.core.database import Base
 
 
 class User(Base):
-    __tablename__ = "auth"
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)

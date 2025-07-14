@@ -25,7 +25,7 @@ add_exception_handlers(app)
 @app.on_event("startup")
 def startup():
     from api.v1.core.database import Base, engine
-    from api.v1.auth.model import User
+    from api.v1.user.model import User
     print("Creating tables...")
     Base.metadata.create_all(bind=engine)
 

@@ -1,39 +1,14 @@
 """User service - Performs CRUD operations on users"""
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
-from pydantic import EmailStr
-from typing import Annotated
 
-from .model import User
-from .schema import UserRegistration
-from ..core.database import get_db
-from .utils import hash_password, verify_password, create_access_token, create_refresh_token, decode_access_token
-from ..core.logger import logger
+from api.v1.user.model import User
+from api.v1.user.service import get_user_by_email
+from api.v1.core.logger import logger
 
+from .utils import verify_password, create_access_token, create_refresh_token, decode_access_token
 
-def create_user(user: UserRegistration, db: Annotated[Session, Depends(get_db)]):
-    """Creates new user"""
-    logger.info(f"Creating user: {user.email}")
-    db_user = User(
-        name=user.name,
-        email=user.email,
-        hashed_password=hash_password(user.password)
-    )
-    try:
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
-        logger.info(f"User: {user.email} created successfully.")
-        return db_user
-    except IntegrityError:
-        db.rollback()
-        logger.warning(f"User with email {user.email} already exists.")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"User with email {user.email} already exists."
-        )
 
 def authenticate_user(email: str, password: str, db: Session) -> User | None:
     logger.info(f"Login attempt by {email}")
@@ -92,19 +67,3 @@ def refresh_access_token(db: Session, refresh_token: str):
         "access_token": new_access_token,
         "token_type": "bearer"
     })
-
-def get_user_by_id(db: Session, user_id: int):
-    """Returns a user described by user_id"""
-    return db.query(User).filter(User.id == user_id).first()
-
-def get_user_by_email(db: Session, email: EmailStr):
-    """Gets a user by email"""
-    return db.query(User).filter(User.email == email).first()
-
-def get_all_users(db: Session):
-    """Returns all users"""
-    return db.query(User).all()
-
-def update_user(db: Session, user_id: int, name: str, email: EmailStr, hased_password: str):
-    """Updates user with new details"""
-    user = db.query(User).filter(User.id == user_id).first()
